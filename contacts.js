@@ -3,7 +3,6 @@ const path = require("path");
 const uniqid = require("uniqid");
 
 const contactsPath = path.join(__dirname, "db", "contacts.json");
-const contactsPathTest = path.join(__dirname, "db", "test.json");
 
 function listContacts() {
   fs.readFile(contactsPath)
@@ -19,7 +18,13 @@ function getContactById(contactId) {
     .then((data) => {
       const contacts = JSON.parse(data);
       const contactById = contacts.find((contact) => contact.id === contactId);
-      console.log(`For id: '${contactId}' found contact: `, contactById);
+
+      if (!contactById) {
+        console.log(`No contacts for id: '${contactId}'.`);
+        return;
+      }
+
+      console.log("Found contact: ", contactById);
     })
     .catch((err) => {
       console.error(err.message);
@@ -27,7 +32,25 @@ function getContactById(contactId) {
 }
 
 function removeContact(contactId) {
-  // ...twój kod
+  fs.readFile(contactsPath)
+    .then((data) => {
+      const contacts = JSON.parse(data);
+
+      const checkContact = contacts.find((contact) => contact.id === contactId);
+
+      if (!checkContact) {
+        console.log(`There is no contact for id: ${contactId}.`);
+      } else {
+        const filteredContacts = contacts.filter(
+          (contact) => contact.id !== contactId
+        );
+        fs.writeFile(contactsPath, JSON.stringify(filteredContacts));
+        console.log("Contact has been removed.");
+      }
+    })
+    .catch((err) => {
+      console.error(err.message);
+    });
 }
 
 function addContact(name, email, phone) {
@@ -61,14 +84,9 @@ function addContact(name, email, phone) {
     });
 }
 
-module.export = {
+module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
 };
-
-listContacts();
-getContactById("AeHIrLTr6JkxGE6SN-0Rw");
-// removeContact("")
-addContact("Aleksandra", "email@email.com", "987654321");
